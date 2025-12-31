@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #9b4cf1ff 0%, #74a4f6ff 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;

@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, #9b4cf1ff 0%, #74a4f6ff 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -221,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
             
             <div class="forgot-password">
-                <a href="forgot-password.php">Mot de passe oublié ?</a>
+                <a href="#">Mot de passe oublié ?</a>
             </div>
             
             <div class="register-link">
