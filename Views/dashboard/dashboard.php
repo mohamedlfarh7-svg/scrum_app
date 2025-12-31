@@ -93,12 +93,25 @@ $user = $userObj->getUserId($_SESSION['user_id']);
         
         .user-role {
             display: inline-block;
-            background: #2ecc71;
-            color: white;
             padding: 5px 15px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 600;
+        }
+        
+        .role-admin {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .role-chef {
+            background: #3498db;
+            color: white;
+        }
+        
+        .role-membre {
+            background: #2ecc71;
+            color: white;
         }
         
         .logout-btn {
@@ -109,12 +122,10 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
         }
         
         .logout-btn:hover {
             background: #c0392b;
-            transform: translateY(-2px);
         }
         
         .stats-grid {
@@ -162,7 +173,6 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
             gap: 25px;
             margin-bottom: 30px;
-            
         }
         
         .card {
@@ -204,14 +214,6 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             border-left: 4px solid #3498db;
         }
         
-        .task-item.done {
-            border-left-color: #2ecc71;
-        }
-        
-        .task-item.pending {
-            border-left-color: #f39c12;
-        }
-        
         .nav-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -225,17 +227,6 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .nav-card:hover {
-            transform: translateY(-5px);
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-        }
-        
-        .nav-card:hover i {
-            color: white;
         }
         
         .nav-icon {
@@ -256,6 +247,10 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             font-size: 14px;
         }
         
+        .hidden {
+            display: none;
+        }
+        
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -267,12 +262,10 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                 flex-direction: column;
                 text-align: center;
             }
+            
             .dashboard-grid {
-            
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-
-            
-        }
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -280,11 +273,21 @@ $user = $userObj->getUserId($_SESSION['user_id']);
     <div class="container">
         <div class="header">
             <div class="user-profile">
-            <div class="avatar"><?php echo strtoupper(substr($user['nom'], 0, 2)); ?></div>
-            <div class="user-details">
-                <h1><?php echo htmlspecialchars($user['nom']); ?></h1>
-                <span class="user-role"><?php echo htmlspecialchars($user['role']); ?></span>
-            </div>
+                <div class="avatar"><?php echo strtoupper(substr($user['nom'], 0, 2)); ?></div>
+                <div class="user-details">
+                    <h1><?php echo htmlspecialchars($user['nom']); ?></h1>
+                    <?php
+                    $role_class = '';
+                    switch($user['role']) {
+                        case 'admin': $role_class = 'role-admin'; break;
+                        case 'chef_projet': $role_class = 'role-chef'; break;
+                        default: $role_class = 'role-membre';
+                    }
+                    ?>
+                    <span class="user-role <?php echo $role_class; ?>">
+                        <?php echo htmlspecialchars($user['role']); ?>
+                    </span>
+                </div>
             </div>
             <button class="logout-btn" onclick="window.location.href='logout.php'">
                 <i class="fas fa-sign-out-alt"></i> Déconnexion
@@ -326,7 +329,7 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-project-diagram"></i> Mes Projets</h2>
-                    <a href="#" class="see-all">Voir tous</a>
+                    <a href="../projects/list.php" class="see-all">Voir tous</a>
                 </div>
                 <ul class="project-list">
                     <li class="project-item">
@@ -337,106 +340,72 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                         <strong>App Mobile</strong>
                         <p>Progression: 45% | Échéance: 30/01/2025</p>
                     </li>
-                    <li class="project-item">
-                        <strong>API Rest</strong>
-                        <p>Progression: 90% | Échéance: 10/12/2024</p>
-                    </li>
                 </ul>
             </div>
 
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-tasks"></i> Mes Tâches</h2>
-                    <a href="#" class="see-all">Voir toutes</a>
+                    <a href="../tasks/list.php" class="see-all">Voir toutes</a>
                 </div>
                 <ul class="task-list">
-                    <li class="task-item done">
+                    <li class="task-item">
                         <strong>Design Homepage</strong>
-                        <p>Projet: Site E-commerce | Terminée</p>
-                    </li>
-                    <li class="task-item pending">
-                        <strong>API Authentication</strong>
-                        <p>Projet: API Rest | En cours</p>
+                        <p>Projet: Site E-commerce | À faire</p>
                     </li>
                     <li class="task-item">
-                        <strong>Testing Mobile App</strong>
-                        <p>Projet: App Mobile | À faire</p>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-calendar-alt"></i> Sprints Actifs</h2>
-                    <a href="#" class="see-all">Voir tous</a>
-                </div>
-                <ul class="project-list">
-                    <li class="project-item">
-                        <strong>Sprint #12</strong>
-                        <p>Projet: Site E-commerce | 01/12 - 15/12</p>
-                    </li>
-                    <li class="project-item">
-                        <strong>Sprint #8</strong>
-                        <p>Projet: App Mobile | 10/12 - 24/12</p>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-bell"></i> Notifications</h2>
-                    <a href="#" class="see-all">Voir toutes</a>
-                </div>
-                <ul class="project-list">
-                    <li class="project-item">
-                        <strong>Nouveau commentaire</strong>
-                        <p>Marie a commenté votre tâche</p>
-                    </li>
-                    <li class="project-item">
-                        <strong>Tâche assignée</strong>
-                        <p>Nouvelle tâche dans API Rest</p>
+                        <strong>API Authentication</strong>
+                        <p>Projet: API Rest | En cours</p>
                     </li>
                 </ul>
             </div>
         </div>
 
         <div class="nav-grid">
-            <div class="nav-card">
-                <i class="fas fa-user-cog nav-icon"></i>
-                <h3>Gestion Utilisateurs</h3>
-                <p>Créer, modifier, administrer</p>
+            <?php if($user['role'] == 'admin'): ?>
+                <div class="nav-card" onclick="window.location.href='../admin/users.php'">
+                    <i class="fas fa-user-cog nav-icon"></i>
+                    <h3>Gestion Utilisateurs</h3>
+                    <p>Administrer les comptes</p>
+                </div>
+            <?php endif; ?>
+            
+            <?php if(in_array($user['role'], ['admin', 'chef_projet'])): ?>
+                <div class="nav-card" onclick="window.location.href='../projects/create.php'">
+                    <i class="fas fa-plus-circle nav-icon"></i>
+                    <h3>Créer Projet</h3>
+                    <p>Nouveau projet Agile</p>
+                </div>
+            <?php endif; ?>
+            
+            <div class="nav-card" onclick="window.location.href='../tasks/list.php'">
+                <i class="fas fa-tasks nav-icon"></i>
+                <h3>Mes Tâches</h3>
+                <p>Voir toutes mes tâches</p>
             </div>
-            <div class="nav-card">
-                <i class="fas fa-plus-circle nav-icon"></i>
-                <h3>Créer Projet</h3>
-                <p>Nouveau projet Agile</p>
+            
+            <div class="nav-card" onclick="window.location.href='../projects/list.php'">
+                <i class="fas fa-project-diagram nav-icon"></i>
+                <h3>Mes Projets</h3>
+                <p>Projets assignés</p>
             </div>
-            <div class="nav-card">
-                <i class="fas fa-search nav-icon"></i>
-                <h3>Recherche Avancée</h3>
-                <p>Tâches, projets, membres</p>
+            
+            <div class="nav-card" onclick="window.location.href='../sprints/list.php'">
+                <i class="fas fa-running nav-icon"></i>
+                <h3>Sprints</h3>
+                <p>Voir les sprints</p>
             </div>
-            <div class="nav-card">
-                <i class="fas fa-chart-line nav-icon"></i>
-                <h3>Statistiques</h3>
-                <p>Rapports et analyses</p>
+            
+            <div class="nav-card" onclick="window.location.href='../user/profile.php'">
+                <i class="fas fa-user-edit nav-icon"></i>
+                <h3>Mon Profil</h3>
+                <p>Modifier mes infos</p>
             </div>
         </div>
 
         <div class="footer">
-            <p>© 2024 Gestion de Projets Agile | Dashboard v2.0</p>
+            <p>© 2024 Gestion de Projets Agile | Dashboard</p>
         </div>
     </div>
-
-    <script>
-
-        document.querySelectorAll('.nav-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const title = this.querySelector('h3').textContent;
-                alert(`Navigation vers: ${title}`);
-            });
-        });
-        
-    </script>
 </body>
 </html>

@@ -5,18 +5,20 @@ $auth = new Auth();
 $error = ''; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nom = $_POST['nom'] ;
-    $email = $_POST['email'];
-    $password = $_POST['password'] ;
+    $nom = $_POST['nom'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $role = $_POST['role'] ?? 'membre';
 
     $nom = trim($nom);
     $email = trim($email);
     $password = trim($password);
+    $role = trim($role);
 
     if(empty($nom) || empty($email) || empty($password)){
         $error = "Tous les champs sont obligatoires !";
     } else {
-        $result = $auth->register($nom, $email, $password);
+        $result = $auth->register($nom, $email, $password, $role);
         
         if ($result) {
             header('Location: login.php');
@@ -29,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: center;
             align-items: center;
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
         }
         
         .register-card {
@@ -65,11 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             padding: 40px;
             width: 100%;
-            transition: transform 0.3s ease;
-        }
-        
-        .register-card:hover {
-            transform: translateY(-5px);
         }
         
         .logo {
@@ -122,24 +119,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 14px;
         }
         
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s;
+            background-color: white;
         }
         
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #9b59b6;
         }
         
-        .password-strength {
-            margin-top: 5px;
-            font-size: 12px;
-            color: #7f8c8d;
+        .form-group select {
+            cursor: pointer;
+        }
+        
+        .role-option {
+            padding: 8px;
         }
         
         .submit-btn {
@@ -152,14 +154,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
             margin-top: 10px;
         }
         
         .submit-btn:hover {
             background: linear-gradient(to right, #8e44ad, #7d3c98);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
         }
         
         .login-link {
@@ -183,13 +182,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 10px 25px;
             border-radius: 6px;
             font-weight: 500;
-            transition: all 0.3s;
         }
         
         .login-btn:hover {
             background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
         
         .terms {
@@ -208,55 +204,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-decoration: underline;
         }
         
-        .field-group {
-            display: flex;
-            gap: 15px;
+        .role-info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
         }
         
-        .field-group .form-group {
-            flex: 1;
-        }
+        .admin-info { border-left: 3px solid #e74c3c; }
+        .chef-info { border-left: 3px solid #3498db; }
+        .membre-info { border-left: 3px solid #2ecc71; }
         
         @media (max-width: 480px) {
             .register-card {
                 padding: 30px 20px;
             }
-            
-            .field-group {
-                flex-direction: column;
-                gap: 20px;
-            }
         }
     </style>
-    <script>
-        function checkPasswordStrength(password) {
-            const strengthBar = document.getElementById('password-strength');
-            let strength = 0;
-            
-            if (password.length >= 8) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
-            
-            const messages = [
-                "Très faible",
-                "Faible",
-                "Moyen",
-                "Fort",
-                "Très fort"
-            ];
-            const colors = [
-                "#e74c3c",
-                "#e67e22",
-                "#f1c40f",
-                "#2ecc71",
-                "#27ae60"
-            ];
-            
-            strengthBar.textContent = "Force du mot de passe: " + messages[strength];
-            strengthBar.style.color = colors[strength];
-        }
-    </script>
 </head>
 <body>
     <div class="container">
@@ -272,7 +238,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
             
-            <form method="POST" action="" id="registerForm">
+            <?php if (!empty($success)): ?>
+                <div class="success-message">
+                    <?php echo htmlspecialchars($success); ?>
+                </div>
+            <?php endif; ?>
+            
+            <form method="POST" action="">
                 <div class="form-group">
                     <label for="nom">Nom complet:</label>
                     <input type="text" id="nom" name="nom" required 
@@ -290,9 +262,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label for="password">Mot de passe:</label>
                     <input type="password" id="password" name="password" required 
-                           placeholder="Minimum 8 caractères"
-                           onkeyup="checkPasswordStrength(this.value)">
-                    <div id="password-strength" class="password-strength"></div>
+                           placeholder="Minimum 8 caractères">
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Rôle:</label>
+                    <select id="role" name="role" required>
+                        <option value="membre" <?php echo (($_POST['role'] ?? '') == 'membre') ? 'selected' : ''; ?>>
+                            Membre d'équipe
+                        </option>
+                        <option value="chef_projet" <?php echo (($_POST['role'] ?? '') == 'chef_projet') ? 'selected' : ''; ?>>
+                            Chef de projet
+                        </option>
+                        <option value="admin" <?php echo (($_POST['role'] ?? '') == 'admin') ? 'selected' : ''; ?>>
+                            Administrateur
+                        </option>
+                    </select>
+                    
+                    <?php
+                    $selected_role = $_POST['role'] ?? 'membre';
+                    $role_descriptions = [
+                        'admin' => "Accès complet à toutes les fonctionnalités",
+                        'chef_projet' => "Peut créer et gérer des projets",
+                        'membre' => "Peut travailler sur les tâches assignées"
+                    ];
+                    $role_classes = [
+                        'admin' => 'admin-info',
+                        'chef_projet' => 'chef-info',
+                        'membre' => 'membre-info'
+                    ];
+                    ?>
+                    <div class="role-info <?php echo $role_classes[$selected_role]; ?>">
+                        <strong>Rôle sélectionné :</strong> 
+                        <?php echo ucfirst(str_replace('_', ' ', $selected_role)); ?> - 
+                        <?php echo $role_descriptions[$selected_role]; ?>
+                    </div>
                 </div>
                 
                 <div class="terms">
