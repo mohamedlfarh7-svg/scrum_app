@@ -51,7 +51,7 @@ $user = $userObj->getUserId($_SESSION['user_id']);
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 87%;
             margin: 0 auto;
         }
         
@@ -403,9 +403,6 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             </div>
         </div>
 
-        <div class="footer">
-            <p>© 2024 Gestion de Projets Agile | Dashboard</p>
-        </div>
     </div>
 </body>
 </html>

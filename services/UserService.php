@@ -1,9 +1,7 @@
 <?php
 
-use LDAP\Result;
-
-require_once '../repositories/UserRepository.php';
-require_once '../Core/Auth.php';
+require_once(__DIR__ . '/../repositories/UserRepository.php');
+require_once(__DIR__ . '/../Core/Auth.php');
 
 class  UserService {
 
@@ -57,6 +55,7 @@ class  UserService {
         if (!$user->verifyPassword($currentPassword)) {
             throw new Exception("Mot de passe actuel incorrect");
         }
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
         
         $user->setMotDePasse($newPassword);
         

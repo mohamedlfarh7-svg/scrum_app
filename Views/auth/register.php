@@ -1,5 +1,10 @@
 <?php
+if (isset($_SESSION['user_id'])) {
+    header('Location: ../dashboard/dashboard.php');
+    exit;
+}
 require_once '../../core/Auth.php';
+require_once '../../services/UserService.php';
 $auth = new Auth();
 
 $error = ''; 
