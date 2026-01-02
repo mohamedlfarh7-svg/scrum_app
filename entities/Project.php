@@ -53,16 +53,17 @@ class projet{
         return $this->statut; 
     }
 
-    public function getStatutText() {
-        $statuts = [
-            'en_attente' => 'En attente',
-            'en_cours' => 'En cours',
-            'termine' => 'Terminé',
-            'suspendu' => 'Suspendu',
-            'annule' => 'Annulé'
-        ];
-        return $statuts[$this->statut] ??'En attente' ;
-    }
+public function getStatutText() {
+    return match($this->statut) {
+        'en_attente' => 'En attente',
+        'en_cours' => 'En cours',
+        'termine' => 'Terminé',
+        'suspendu' => 'Suspendu',
+        'annule' => 'Annulé',
+        default => 'En attente'
+    };
+    return $this->statut;
+}
 
 
     public function setId($id) {

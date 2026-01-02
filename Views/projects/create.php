@@ -28,11 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $projet = $service->createProjet($data);
         
-        $success = "✅ Projet créé avec ID: " . $projet->getId();
+        $success = " Projet créé avec ID: " . $projet->getId();
         header("refresh:2;url=list.php");
         
     } catch (Exception $e) {
-        $error = "❌ Erreur: " . $e->getMessage();
+        $error = " Erreur: " . $e->getMessage();
     }
 }
 ?>
@@ -225,15 +225,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            name="titre" 
                            class="form-control" 
                            placeholder="Ex: Développement d'application mobile"
-                           required
-                           value="<?php echo isset($_POST['titre']) ? htmlspecialchars($_POST['titre']) : ''; ?>">
+                           required>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Description</label>
                     <textarea name="description" 
                               class="form-control" 
-                              placeholder="Décrivez votre projet..."><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description']) : ''; ?></textarea>
+                              placeholder="Décrivez votre projet...">
+                    </textarea>
                 </div>
                 
                 <div class="form-group">
@@ -241,16 +241,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="number" 
                            name="chef_id" 
                            class="form-control" 
-                           placeholder="ID du chef de projet"
-                           value="<?php echo isset($_POST['chef_id']) ? htmlspecialchars($_POST['chef_id']) : ''; ?>">
+                           placeholder="ID du chef de projet">
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Statut *</label>
+                    <label class="form-label">Statut</label>
                     <select name="statut" class="form-control" required>
-                        <option value="en_attente" <?php echo (isset($_POST['statut']) && $_POST['statut'] == 'en_attente') ? 'selected' : ''; ?>>En attente</option>
-                        <option value="en_cours" <?php echo (isset($_POST['statut']) && $_POST['statut'] == 'en_cours') ? 'selected' : (!isset($_POST['statut']) ? 'selected' : ''); ?>>En cours</option>
-                        <option value="termine" <?php echo (isset($_POST['statut']) && $_POST['statut'] == 'termine') ? 'selected' : ''; ?>>Terminé</option>
+                        <option value="en_attente" >En attente</option>
+                        <option value="en_cours" >En cours</option>
+                        <option value="termine">Terminé</option>
                     </select>
                 </div>
                 
