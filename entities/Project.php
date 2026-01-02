@@ -61,7 +61,7 @@ class projet{
             'suspendu' => 'Suspendu',
             'annule' => 'Annulé'
         ];
-        return $statuts[$this->statut] ?? $this->statut;
+        return $statuts[$this->statut] ??'En attente' ;
     }
 
 
@@ -94,10 +94,6 @@ class projet{
     }
 
     public function setStatut($statut) {
-        $statuts_valides = ['en_attente', 'en_cours', 'termine', 'suspendu', 'annule'];
-        if(!in_array($statut, $statuts_valides)) {
-            throw new InvalidArgumentException("Le statut n'est pas valide");
-        }
         $this->statut = $statut;
         return $this;
     }

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../entities/Projet.php';
+require_once __DIR__ . '/../entities/Project.php';
 
 class ProjetRepository {
     private $db;

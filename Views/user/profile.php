@@ -91,17 +91,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password']))
             overflow: hidden;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-        }
-
-
 
         .back-btn {
             background: rgba(255, 255, 255, 0.2);

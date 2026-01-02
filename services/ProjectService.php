@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../entities/Projet.php'; 
-require_once __DIR__ . '/../repositories/ProjetRepository.php';
+require_once __DIR__ . '/../entities/Project.php'; 
+require_once __DIR__ . '/../repositories/ProjectRepository.php';
 
 class ProjetService{
 
