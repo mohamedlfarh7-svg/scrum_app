@@ -45,7 +45,7 @@ $user = $userObj->getUserId($_SESSION['user_id']);
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -56,7 +56,7 @@ $user = $userObj->getUserId($_SESSION['user_id']);
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #eceef7ff 0%, #eddefcff 100%);
             border-radius: 15px;
             padding: 20px 30px;
             margin-bottom: 30px;

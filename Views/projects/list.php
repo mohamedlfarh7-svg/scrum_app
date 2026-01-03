@@ -72,7 +72,18 @@ try {
         .header h1 i {
             color: #764ba2;
         }
-        
+        .back-btn {
+            background: #764ba2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
         .btn-create {
             background: linear-gradient(to right, #764ba2, #667eea);
             color: white;
@@ -271,6 +282,10 @@ try {
 </head>
 <body>
     <div class="container">
+        <a href="../dashboard/dashboard.php" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Retour aux Dashboard
+        </a>
         <div class="header">
             <h1>
                 <i class="fas fa-project-diagram"></i>
@@ -374,10 +389,10 @@ try {
                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce projet?')">
                                             <i class="fas fa-trash"></i>
                                         </a>
-                                        <a href="show.php?id=<?php echo $projet->getId(); ?>" 
-                                           class="btn-action btn-view" 
-                                           title="Voir">
-                                            <i class="fas fa-eye"></i>
+                                        <a href="../sprints/list.php?id=<?php echo $projet->getId(); ?>"
+                                            class="btn-action btn-sprint" 
+                                            title="Voir les sprints">
+                                            <i class="fas fa-running"></i>
                                         </a>
                                     </div>
                                 </td>

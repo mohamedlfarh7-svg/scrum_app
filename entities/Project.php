@@ -54,15 +54,14 @@ class projet{
     }
 
 public function getStatutText() {
-    return match($this->statut) {
+    $statuts = [
         'en_attente' => 'En attente',
         'en_cours' => 'En cours',
         'termine' => 'Terminé',
         'suspendu' => 'Suspendu',
         'annule' => 'Annulé',
-        default => 'En attente'
-    };
-    return $this->statut;
+    ];
+    return  $statuts[$this->statut] ??'En attente';
 }
 
 
@@ -98,7 +97,24 @@ public function getStatutText() {
         $this->statut = $statut;
         return $this;
     }
+    public function isEnCours() {
+        return $this->statut === 'en_cours';
+    }
 
+    public function isTermine() {
+        return $this->statut === 'terminé';
+    }
+
+    public function isAttentre() {
+        return $this->statut === 'en_attente';
+    }
+
+    public function isAnnule() {
+        return $this->statut === 'annulé';
+    }
+    public function isSuspendu() {
+        return $this->statut === 'suspendu';
+    }
 
     public static function fromArray(array $data) {
         $projet = new projet();
