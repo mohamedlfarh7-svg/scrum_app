@@ -190,7 +190,10 @@ try {
             align-items: center;
             gap: 5px;
         }
-        
+        .btn-tasks {
+            background: #3498db;
+            color: white;
+        }
         .btn-edit {
             background: #e3f2fd;
             color: #1976d2;
@@ -284,10 +287,14 @@ try {
                                 Modifier
                             </a>
                             <a href="delete.php?id=<?php echo $sprint->getId(); ?>&projet_id=<?php echo $projet_id; ?>" 
-                               class="btn btn-delete"
-                               onclick="return confirm('Supprimer ce sprint?')">
+                            class="btn btn-delete"
+                            onclick="return confirm('Supprimer ce sprint?')">
                                 <i class="fas fa-trash"></i>
                                 Supprimer
+                            </a>
+                            <a href="../tasks/list.php?sprint_id=<?php echo $sprint->getId(); ?>" class="btn btn-tasks">
+                                <i class="fas fa-tasks"></i>
+                                Tâches
                             </a>
                         </div>
                     </div>
