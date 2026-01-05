@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -8,6 +7,41 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once '../../Core/Database.php';
+$pdo = Database::connect();
+$projet = "SELECT COUNT(*) AS total FROM projets";
+$stmt = $pdo->query($projet);
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+$totalProjet = $result['total'];
+
+$sql = "SELECT titre FROM projets";
+$stmt = $pdo->query($sql);
+$projets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$pdo = Database::connect();
+$sprint = "SELECT COUNT(*) AS total FROM sprints";
+$stmt = $pdo->query($sprint);
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+$totalSprint = $result['total'];
+
+$pdo = Database::connect();
+$task = "SELECT COUNT(*) AS total FROM tasks";
+$stmt = $pdo->query($task);
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+$totalTasks = $result['total'];
+
+$pdo = Database::connect();
+$user = "SELECT COUNT(*) AS total FROM users";
+$stmt = $pdo->query($user);
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+$totalUser = $result['total'];
+
+$sql = "SELECT titre FROM tasks";
+$stmt = $pdo->query($sql);
+$tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+
 
 class User {
     private $db;
@@ -22,6 +56,7 @@ class User {
         $get->execute(['id' => $id]);
         return $get->fetch(PDO::FETCH_ASSOC);
     }
+
 }
 
 $userObj = new User();
@@ -45,7 +80,7 @@ $user = $userObj->getUserId($_SESSION['user_id']);
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f7fa;
             min-height: 100vh;
             padding: 20px;
         }
@@ -301,28 +336,28 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                 <div class="stat-icon">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="stat-number">42</div>
+                <div class="stat-number"><?php echo $totalUser?></div>
                 <div class="stat-label">Utilisateurs</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-project-diagram"></i>
                 </div>
-                <div class="stat-number">15</div>
+                <div class="stat-number"><?php echo $totalProjet?></div>
                 <div class="stat-label">Projets</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-tasks"></i>
                 </div>
-                <div class="stat-number">87</div>
-                <div class="stat-label">Tâches</div>
+                <div class="stat-number"><?php echo $totalTasks?></div>
+                <div class="stat-label">Taches</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-running"></i>
                 </div>
-                <div class="stat-number">12</div>
+                <div class="stat-number"><?php echo $totalSprint?></div>
                 <div class="stat-label">Sprints</div>
             </div>
         </div>
@@ -334,15 +369,13 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                     <a href="../projects/list.php" class="see-all">Voir tous</a>
                 </div>
                 <ul class="project-list">
-                    <li class="project-item">
-                        <strong>Site E-commerce</strong>
-                        <p>Progression: 75% | Échéance: 15/12/2024</p>
-                    </li>
-                    <li class="project-item">
-                        <strong>App Mobile</strong>
-                        <p>Progression: 45% | Échéance: 30/01/2025</p>
-                    </li>
+                    <?php foreach ($projets as $projet) { ?>
+                        <li class="project-item">
+                            <strong><?php echo htmlspecialchars($projet['titre']); ?></strong>
+                        </li>
+                    <?php } ?>
                 </ul>
+                    </li>
             </div>
 
             <div class="card">
@@ -351,14 +384,11 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                     <a href="../tasks/list.php" class="see-all">Voir toutes</a>
                 </div>
                 <ul class="task-list">
-                    <li class="task-item">
-                        <strong>Design Homepage</strong>
-                        <p>Projet: Site E-commerce | À faire</p>
-                    </li>
-                    <li class="task-item">
-                        <strong>API Authentication</strong>
-                        <p>Projet: API Rest | En cours</p>
-                    </li>
+                    <?php foreach ($tasks as $task) { ?>
+                        <li class="project-item">
+                            <strong><?php echo htmlspecialchars($task['titre']); ?></strong>
+                        </li>
+                    <?php } ?>
                 </ul>
             </div>
         </div>
