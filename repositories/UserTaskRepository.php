@@ -10,7 +10,7 @@ class TaskUserRepository {
     }
 
     public function assignUser($taskUser) {
-        $sql = "INSERT INTO task_user (task_id, user_id, role) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO user_task (task_id, user_id, role) VALUES (?, ?, ?)";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -24,7 +24,7 @@ class TaskUserRepository {
     }
 
     public function findAssignmentsByTask($task_id) {
-        $stmt = $this->db->prepare("SELECT * FROM task_user WHERE task_id = ?");
+        $stmt = $this->db->prepare("SELECT * FROM user_task WHERE task_id = ?");
         $stmt->execute([$task_id]);
         
         $assignments = [];
@@ -36,7 +36,7 @@ class TaskUserRepository {
     }
 
     public function removeAssignment($task_id, $user_id) {
-        $stmt = $this->db->prepare("DELETE FROM task_user WHERE task_id = ? AND user_id = ?");
+        $stmt = $this->db->prepare("DELETE FROM user_task WHERE task_id = ? AND user_id = ?");
         return $stmt->execute([$task_id, $user_id]);
     }
 }
