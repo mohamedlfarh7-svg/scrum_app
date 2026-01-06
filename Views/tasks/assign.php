@@ -24,8 +24,8 @@ try {
     require_once __DIR__ . '/../../entities/Sprint.php';
     require_once __DIR__ . '/../../repositories/SprintRepository.php';
     require_once __DIR__ . '/../../services/SprintService.php';
-    require_once __DIR__ . '/../../entities/UserTask.php';
-    require_once __DIR__ . '/../../repositories/UserTaskRepository.php';
+    require_once __DIR__ . '/../../entities/UserTask.php'; // Entité correcte
+    require_once __DIR__ . '/../../repositories/UserTaskRepository.php'; // Repository correct
     require_once __DIR__ . '/../../services/UserService.php';
     
     $db = Database::connect();
@@ -44,15 +44,15 @@ try {
     $task = $taskService->getTaskById($task_id);
     
     if (!$task || $task->getSprintId() != $sprint_id) {
-        header('Location: list.php?sprint_id=' . $sprint_id);
+        header('Location: list.php');
         exit();
     }
 
-    $taskUserRepo = new TaskUserRepository($db);
+    $userTaskRepo = new TaskUserRepository($db);
     
     $UserService = new UserService($db);
     $users = $UserService->getAllUsers();
-    $assignments = $taskUserRepo->findAssignmentsByTask($task_id);
+    $assignments = $userTaskRepo->findAssignmentsByTask($task_id);
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['assign_user'])) {
@@ -60,14 +60,16 @@ try {
             $role = $_POST['role'] ?? 'assignee';
             
             if ($user_id) {
-                $taskUser = new TaskUser();
-                $taskUser->setTaskId($task_id);
-                $taskUser->setUserId($user_id);
-                $taskUser->setRole($role);
                 
-                $TaskUserRepository->assignUser($taskUser);
-                $success = "✅ Utilisateur assigné avec succès!";
-                header("refresh:2;url=assign.php?task_id=$task_id&sprint_id=$sprint_id");
+                $userTask = new TaskUser();
+                $userTask->setTaskId($task_id);
+                $userTask->setUserId($user_id);
+                $userTask->setRole($role);
+                
+                $userTaskRepo->assignUser($userTask);
+                $success = "Utilisateur assigné avec succès!";
+                header("location: assign.php?task_id=" . $task_id . "&sprint_id=" . $sprint_id);
+                exit();
             }
         }
         
@@ -75,15 +77,16 @@ try {
             $assignment_id = $_POST['assignment_id'] ?? 0;
             
             if ($assignment_id) {
-                $TaskUserRepository->removeAssignment($assignment_id);
-                $success = "✅ Assignation supprimée avec succès!";
-                header("refresh:2;url=assign.php?task_id=$task_id&sprint_id=$sprint_id");
+                $userTaskRepo->removeAssignment($assignment_id);
+                $success = "Assignation supprimée avec succès!";
+                header("location: assign.php?task_id=" . $task_id . "&sprint_id=" . $sprint_id);
+                exit();
             }
         }
     }
     
 } catch (Exception $e) {
-    $error = "❌ Erreur: " . $e->getMessage();
+    $error = "Erreur: " . $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -91,7 +94,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assigner Utilisateurs - <?php echo htmlspecialchars($task->getTitre()); ?></title>
+    <title>Assigner Utilisateurs</title>
     <style>
         * {
             margin: 0;
@@ -110,19 +113,7 @@ try {
             max-width: 1200px;
             margin: 0 auto;
         }
-        
-        .back-btn {
-            background: #764ba2;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
+    
         
         .header {
             background: white;
@@ -298,10 +289,7 @@ try {
 </head>
 <body>
     <div class="container">
-        <a href="list.php?sprint_id=<?php echo $sprint_id; ?>" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            Retour aux tâches
-        </a>
+
         
         <div class="header">
             <div class="task-info">
@@ -350,14 +338,15 @@ try {
                 <form method="POST" action="">
                     <div class="form-group">
                         <label class="form-label">Utilisateur</label>
+
                         <select name="user_id" class="form-control" required>
                             <option value="">Sélectionner un utilisateur</option>
-                            <?php foreach ($users as $user): ?>
-                                <option value="<?php echo $user['id']; ?>">
-                                    <?php echo htmlspecialchars($user['nom']); ?> 
-                                    (<?php echo htmlspecialchars($user['role']); ?>)
-                                </option>
-                            <?php endforeach; ?>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?php echo $user->getId(); ?>">
+                                        <?php echo htmlspecialchars($user->getNom()); ?> 
+                                        (<?php echo htmlspecialchars($user->getRole()); ?>)
+                                    </option>
+                                <?php endforeach; ?>
                         </select>
                     </div>
                     
@@ -393,18 +382,29 @@ try {
                         <?php foreach ($assignments as $assignment): ?>
                             <li class="assignment-item">
                                 <div class="assignment-info">
+                                    
                                     <h4>Utilisateur #<?php echo $assignment->getUserId(); ?></h4>
                                     <span class="assignment-role role-<?php echo $assignment->getRole(); ?>">
-                                        <?php echo $assignment->getRoleText(); ?>
+                                        <?php 
+                                        
+                                        if (method_exists($assignment, 'getRoleText')) {
+                                            echo $assignment->getRoleText();
+                                        } else {
+                                            echo ucfirst($assignment->getRole());
+                                        }
+                                        ?>
                                     </span>
                                     <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">
-                                        Assigné le: <?php echo $assignment->getDateAssignation(); ?>
+                                        
+                                        <?php if (method_exists($assignment, 'getDateAssignation')): ?>
+                                            Assigné le: <?php echo $assignment->getDateAssignation(); ?>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 
-                                <form method="POST" action="" style="margin: 0;">
+                                <form method="POST" action="">
                                     <input type="hidden" name="assignment_id" value="<?php echo $assignment->getId(); ?>">
-                                    <button type="submit" name="remove_assignment" class="btn btn-danger" 
+                                    <button type="submit" name="remove_assignment" class="btn btn-danger"
                                             onclick="return confirm('Retirer cet utilisateur?')">
                                         <i class="fas fa-times"></i>
                                     </button>

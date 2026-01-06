@@ -35,9 +35,11 @@ class TaskUserRepository {
         return $assignments;
     }
 
-    public function removeAssignment($task_id, $user_id) {
-        $stmt = $this->db->prepare("DELETE FROM user_task WHERE task_id = ? AND user_id = ?");
-        return $stmt->execute([$task_id, $user_id]);
+    public function removeAssignment($assignment_id)
+    {
+        $sql = "DELETE FROM user_tasks WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$assignment_id]);
     }
 }
 ?>
