@@ -86,7 +86,7 @@ $user = $userObj->getUserId($_SESSION['user_id']);
         }
         
         .container {
-            max-width: 87%;
+            max-width: 92%;
             margin: 0 auto;
         }
         
@@ -260,7 +260,7 @@ $user = $userObj->getUserId($_SESSION['user_id']);
         .nav-card {
             background: white;
             border-radius: 15px;
-            padding: 25px;
+            padding: 30px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             cursor: pointer;

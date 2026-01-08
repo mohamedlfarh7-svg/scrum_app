@@ -26,6 +26,17 @@ class TaskRepository {
         return $task;
     }
 
+       public function all() {
+        $stmt = $this->db->query("SELECT * FROM tasks ORDER BY date_creation DESC");
+        $tasks = [];
+        
+        while ($data = $stmt->fetch()) {
+            $tasks[] = Task::fromArray($data); 
+        }
+        
+        return $tasks;
+    }
+
     public function find($id){
         $find = $this->db->prepare("SELECT * FROM tasks WHERE id = ?");
         $find->execute([$id]);
