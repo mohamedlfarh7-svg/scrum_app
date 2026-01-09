@@ -39,18 +39,5 @@ class Notification
         $this->is_read = true;
         return $this;
     }
-    
-    public function toArray() {
-        return [
-            'id' => $this->id,
-            'user_id' => $this->user_id,
-            'type' => $this->type,
-            'message' => $this->message,
-            'related_id' => $this->related_id,
-            'is_read' => $this->is_read,
-            'created_at' => $this->created_at,
-            'created_at_formatted' => date('d/m/Y H:i', strtotime($this->created_at))
-        ];
-    }
 }
 ?>

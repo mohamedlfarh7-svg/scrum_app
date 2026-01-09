@@ -2,13 +2,14 @@
 require_once __DIR__ . '/../entities/Task.php';
 require_once __DIR__ . '/../repositories/TaskRepository.php';
 require_once __DIR__ . '/../repositories/UserTaskRepository.php';
+
 class TaskService{
     private $taskRepository;
     private $taskUserRepository;
 
-    public function __construct($taskRepository, $taskUserRepository = null) {
-        $this->taskRepository = $taskRepository;
-        $this->taskUserRepository = $taskUserRepository;
+    public function __construct($pdo) {
+        $this->taskRepository = new TaskRepository($pdo);
+        $this->taskUserRepository = new TaskUserRepository($pdo);
     }
 
     public function createTask($data){
@@ -52,13 +53,7 @@ class TaskService{
         return $this->taskRepository->delete($id);
     }
 
-
-
     public function assignUserToTask($task_id, $user_id, $role = 'collaborateur') {
-        if (!$this->taskUserRepository) {
-            throw new Exception("TaskUserRepository non disponible");
-        }
-        
         $taskUser = new TaskUser();
         $taskUser->setTaskId($task_id);
         $taskUser->setUserId($user_id);
@@ -68,20 +63,11 @@ class TaskService{
     }
 
     public function getTaskAssignments($task_id) {
-        if (!$this->taskUserRepository) {
-            throw new Exception("TaskUserRepository non disponible");
-        }
-        
         return $this->taskUserRepository->findAssignmentsByTask($task_id);
     }
 
-        public function removeUserFromTask($task_id, $user_id) {
-        if (!$this->taskUserRepository) {
-            throw new Exception("TaskUserRepository non disponible");
-        }
-        
+    public function removeUserFromTask($task_id, $user_id) {
         return $this->taskUserRepository->removeAssignment($task_id, $user_id);
     }
 }
-
 ?>

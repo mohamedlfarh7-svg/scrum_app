@@ -7,60 +7,75 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once '../../Core/Database.php';
-$pdo = Database::connect();
-$projet = "SELECT COUNT(*) AS total FROM projets";
-$stmt = $pdo->query($projet);
-$result = $stmt->fetch(PDO::FETCH_ASSOC);
-$totalProjet = $result['total'];
 
-$sql = "SELECT titre FROM projets";
-$stmt = $pdo->query($sql);
-$projets = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$pdo = Database::connect();
-$sprint = "SELECT COUNT(*) AS total FROM sprints";
-$stmt = $pdo->query($sprint);
-$result = $stmt->fetch(PDO::FETCH_ASSOC);
-$totalSprint = $result['total'];
-
-$pdo = Database::connect();
-$task = "SELECT COUNT(*) AS total FROM tasks";
-$stmt = $pdo->query($task);
-$result = $stmt->fetch(PDO::FETCH_ASSOC);
-$totalTasks = $result['total'];
-
-$pdo = Database::connect();
-$user = "SELECT COUNT(*) AS total FROM users";
-$stmt = $pdo->query($user);
-$result = $stmt->fetch(PDO::FETCH_ASSOC);
-$totalUser = $result['total'];
-
-$sql = "SELECT titre FROM tasks";
-$stmt = $pdo->query($sql);
-$tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-
-
-
-class User {
-    private $db;
+class DashboardService {
+    private $pdo;
     
-    public function __construct()
-    {
-        $this->db = Database::connect();
+    public function __construct() {
+        $this->pdo = Database::connect();
     }
     
-    public function getUserId($id){
-        $get = $this->db->prepare("SELECT * FROM users WHERE id = :id");
-        $get->execute(['id' => $id]);
-        return $get->fetch(PDO::FETCH_ASSOC);
+    public function getTotalProjets() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) AS total FROM projets");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
     }
-
+    
+    public function getTotalSprints() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) AS total FROM sprints");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
+    
+    public function getTotalTasks() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) AS total FROM tasks");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
+    
+    public function getTotalUsers() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) AS total FROM users");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
+    
+    public function getProjets() {
+        $stmt = $this->pdo->query("SELECT titre FROM projets LIMIT 5");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getTasks() {
+        $stmt = $this->pdo->query("SELECT titre FROM tasks LIMIT 5");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getUser($id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function getUnreadNotifications($user_id) {
+        try {
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+            $stmt->execute([$user_id]);
+            return $stmt->fetchColumn();
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
 }
 
-$userObj = new User();
-$user = $userObj->getUserId($_SESSION['user_id']);
+$dashboardService = new DashboardService();
+
+$totalProjet = $dashboardService->getTotalProjets();
+$totalSprint = $dashboardService->getTotalSprints();
+$totalTasks = $dashboardService->getTotalTasks();
+$totalUser = $dashboardService->getTotalUsers();
+$projets = $dashboardService->getProjets();
+$tasks = $dashboardService->getTasks();
+$user = $dashboardService->getUser($_SESSION['user_id']);
+$unread_count = $dashboardService->getUnreadNotifications($_SESSION['user_id']);
 
 ?>
 
@@ -149,6 +164,45 @@ $user = $userObj->getUserId($_SESSION['user_id']);
         .role-membre {
             background: #2ecc71;
             color: white;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .notification-btn {
+            position: relative;
+            background: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-size: 20px;
+            text-decoration: none;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
         }
         
         .logout-btn {
@@ -264,6 +318,11 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .nav-card:hover {
+            transform: translateY(-5px);
         }
         
         .nav-icon {
@@ -284,10 +343,6 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             font-size: 14px;
         }
         
-        .hidden {
-            display: none;
-        }
-        
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -302,6 +357,11 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             
             .dashboard-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -326,9 +386,19 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                     </span>
                 </div>
             </div>
-            <button class="logout-btn" onclick="window.location.href='logout.php'">
-                <i class="fas fa-sign-out-alt"></i> Déconnexion
-            </button>
+            
+            <div class="header-actions">
+                <a href="../notification/list.php" class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <?php if ($unread_count > 0): ?>
+                        <span class="notification-badge"><?php echo $unread_count; ?></span>
+                    <?php endif; ?>
+                </a>
+                
+                <button class="logout-btn" onclick="window.location.href='../auth/logout.php'">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
         </div>
 
         <div class="stats-grid">
@@ -336,28 +406,28 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                 <div class="stat-icon">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="stat-number"><?php echo $totalUser?></div>
+                <div class="stat-number"><?php echo $totalUser; ?></div>
                 <div class="stat-label">Utilisateurs</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-project-diagram"></i>
                 </div>
-                <div class="stat-number"><?php echo $totalProjet?></div>
+                <div class="stat-number"><?php echo $totalProjet; ?></div>
                 <div class="stat-label">Projets</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-tasks"></i>
                 </div>
-                <div class="stat-number"><?php echo $totalTasks?></div>
-                <div class="stat-label">Taches</div>
+                <div class="stat-number"><?php echo $totalTasks; ?></div>
+                <div class="stat-label">Tâches</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-running"></i>
                 </div>
-                <div class="stat-number"><?php echo $totalSprint?></div>
+                <div class="stat-number"><?php echo $totalSprint; ?></div>
                 <div class="stat-label">Sprints</div>
             </div>
         </div>
@@ -369,13 +439,12 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                     <a href="../projects/list.php" class="see-all">Voir tous</a>
                 </div>
                 <ul class="project-list">
-                    <?php foreach ($projets as $projet) { ?>
+                    <?php foreach ($projets as $projet): ?>
                         <li class="project-item">
                             <strong><?php echo htmlspecialchars($projet['titre']); ?></strong>
                         </li>
-                    <?php } ?>
+                    <?php endforeach; ?>
                 </ul>
-                    </li>
             </div>
 
             <div class="card">
@@ -384,11 +453,11 @@ $user = $userObj->getUserId($_SESSION['user_id']);
                     <a href="../tasks/list.php" class="see-all">Voir toutes</a>
                 </div>
                 <ul class="task-list">
-                    <?php foreach ($tasks as $task) { ?>
-                        <li class="project-item">
+                    <?php foreach ($tasks as $task): ?>
+                        <li class="task-item">
                             <strong><?php echo htmlspecialchars($task['titre']); ?></strong>
                         </li>
-                    <?php } ?>
+                    <?php endforeach; ?>
                 </ul>
             </div>
         </div>
@@ -435,6 +504,17 @@ $user = $userObj->getUserId($_SESSION['user_id']);
             </div>
         </div>
 
+        <div class="footer">
+            <p>Dashboard Agile © <?php echo date('Y'); ?> - Tous droits réservés</p>
+        </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.nav-card').forEach(card => {
+            card.addEventListener('click', function() {
+                window.location.href = this.getAttribute('onclick').match(/window\.location\.href='([^']+)'/)[1];
+            });
+        });
+    </script>
 </body>
 </html>

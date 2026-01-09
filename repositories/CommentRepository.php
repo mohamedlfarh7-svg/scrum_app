@@ -8,6 +8,31 @@ class CommentRepository {
         $this->pdo = $pdo;
     }
     
+    public function create(Comment $comment) {
+        $stmt = $this->pdo->prepare("
+            INSERT INTO comments (task_id, user_id, content, parent_comment_id) 
+            VALUES (?, ?, ?, ?)
+        ");
+        return $stmt->execute([
+            $comment->getTaskId(),
+            $comment->getUserId(),
+            $comment->getContent(),
+            $comment->getParentCommentId()
+        ]);
+    }
+    
+    public function findByTask($task_id) {
+        $stmt = $this->pdo->prepare("
+            SELECT c.*, u.nom as user_name 
+            FROM comments c 
+            LEFT JOIN users u ON c.user_id = u.id 
+            WHERE c.task_id = ? 
+            ORDER BY c.date_creation ASC
+        ");
+        $stmt->execute([$task_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
     public function find($id) {
         $stmt = $this->pdo->prepare("SELECT * FROM comments WHERE id = ?");
         $stmt->execute([$id]);
@@ -19,39 +44,11 @@ class CommentRepository {
             $data['task_id'],
             $data['user_id'],
             $data['content'],
-            $data['parent_comment_id'],
+            $data['parent_comment_id'] ?? null,
             $data['id'],
-            $data['created_at'],
-            $data['updated_at']
+            $data['date_creation'] ?? null,
+            $data['date_modification'] ?? null
         );
-    }
-    
-    public function create(Comment $comment) {
-        $stmt = $this->pdo->prepare("
-            INSERT INTO comments (task_id, user_id, content, parent_comment_id, created_at) 
-            VALUES (?, ?, ?, ?, NOW())
-        ");
-        
-        $success = $stmt->execute([
-            $comment->getTaskId(),
-            $comment->getUserId(),
-            $comment->getContent(),
-            $comment->getParentCommentId()
-        ]);
-        
-        return $success;
-    }
-    
-    public function findByTask($task_id) {
-        $stmt = $this->pdo->prepare("
-            SELECT c.*, u.nom as user_name 
-            FROM comments c 
-            LEFT JOIN users u ON c.user_id = u.id 
-            WHERE c.task_id = ? 
-            ORDER BY c.created_at ASC
-        ");
-        $stmt->execute([$task_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     public function findReplies($parent_comment_id) {
@@ -60,24 +57,24 @@ class CommentRepository {
             FROM comments c 
             LEFT JOIN users u ON c.user_id = u.id 
             WHERE c.parent_comment_id = ? 
-            ORDER BY c.created_at ASC
+            ORDER BY c.date_creation ASC
         ");
         $stmt->execute([$parent_comment_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function delete($id) {
-        $stmt = $this->pdo->prepare("DELETE FROM comments WHERE id = ?");
-        return $stmt->execute([$id]);
-    }
-    
     public function updateContent($id, $content) {
         $stmt = $this->pdo->prepare("
             UPDATE comments 
-            SET content = ?, updated_at = NOW() 
+            SET content = ?, date_modification = NOW() 
             WHERE id = ?
         ");
         return $stmt->execute([$content, $id]);
+    }
+    
+    public function delete($id) {
+        $stmt = $this->pdo->prepare("DELETE FROM comments WHERE id = ?");
+        return $stmt->execute([$id]);
     }
     
     public function countByTask($task_id) {
@@ -87,7 +84,7 @@ class CommentRepository {
     }
     
     public function findByUser($user_id) {
-        $stmt = $this->pdo->prepare("SELECT * FROM comments WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt = $this->pdo->prepare("SELECT * FROM comments WHERE user_id = ? ORDER BY date_creation DESC");
         $stmt->execute([$user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

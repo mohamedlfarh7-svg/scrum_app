@@ -13,17 +13,18 @@ if (!$sprint_id) {
 
 try {
     require_once __DIR__ . '/../../Core/Database.php';
-    require_once __DIR__ . '/../../entities/Task.php';
-    require_once __DIR__ . '/../../repositories/TaskRepository.php';
     require_once __DIR__ . '/../../services/TaskService.php';
-    require_once __DIR__ . '/../../entities/Sprint.php';
-    require_once __DIR__ . '/../../repositories/SprintRepository.php';
     require_once __DIR__ . '/../../services/SprintService.php';
+    require_once __DIR__ . '/../../services/CommentService.php';
+    require_once __DIR__ . '/../../repositories/SprintRepository.php';
     
     $db = Database::connect();
     
+    $taskService = new TaskService($db);
+    $commentService = new CommentService($db);
     $sprintRepo = new SprintRepository($db);
     $sprintService = new SprintService($sprintRepo);
+    
     $sprint = $sprintService->getSprintById($sprint_id);
     
     if (!$sprint) {
@@ -31,8 +32,6 @@ try {
         exit();
     }
     
-    $taskRepo = new TaskRepository($db);
-    $taskService = new TaskService($taskRepo);
     $tasks = $taskService->getTasksBySprint($sprint_id);
     
 } catch (Exception $e) {
@@ -208,17 +207,18 @@ try {
         
         .task-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #eee;
+            flex-wrap: wrap;
         }
         
         .btn {
-            padding: 8px 15px;
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -228,9 +228,42 @@ try {
             gap: 5px;
         }
         
+        .btn-comment {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            position: relative;
+            padding-right: 15px;
+        }
+        
+        .btn-comment:hover {
+            background: linear-gradient(135deg, #5a67d8, #663399);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .comment-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
         .btn-edit {
             background: #e3f2fd;
             color: #1976d2;
+        }
+        
+        .btn-edit:hover {
+            background: #bbdefb;
         }
         
         .btn-delete {
@@ -238,9 +271,17 @@ try {
             color: #d32f2f;
         }
         
+        .btn-delete:hover {
+            background: #ffcdd2;
+        }
+        
         .btn-assign {
             background: #e8f5e9;
             color: #2e7d32;
+        }
+        
+        .btn-assign:hover {
+            background: #c8e6c9;
         }
         
         .btn-create {
@@ -253,6 +294,14 @@ try {
             align-items: center;
             gap: 10px;
             margin-top: 20px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        
+        .btn-create:hover {
+            background: linear-gradient(to right, #663399, #5a67d8);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
         
         .empty-state {
@@ -265,6 +314,17 @@ try {
             font-size: 3rem;
             color: #ddd;
             margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .task-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -331,14 +391,16 @@ try {
                 <i class="fas fa-tasks"></i>
                 <h3>Aucune tâche trouvée</h3>
                 <p>Commencez par créer votre première tâche</p>
-                <a href="create.php?sprint_id=<?php echo $sprint_id; ?>" class="btn btn-create">
+                <a href="create.php?sprint_id=<?php echo $sprint_id; ?>" class="btn-create">
                     <i class="fas fa-plus"></i>
                     Créer une tâche
                 </a>
             </div>
         <?php else: ?>
             <div class="tasks-grid">
-                <?php foreach ($tasks as $task): ?>
+                <?php foreach ($tasks as $task): 
+                    $comment_count = $commentService->getCommentCount($task->getId());
+                ?>
                     <div class="task-card">
                         <div class="task-header">
                             <h3 class="task-title"><?php echo htmlspecialchars($task->getTitre()); ?></h3>
@@ -354,7 +416,8 @@ try {
                         
                         <?php if ($task->getDescription()): ?>
                             <div class="task-description">
-                                <?php echo nl2br(htmlspecialchars($task->getDescription())); ?>
+                                <?php echo nl2br(htmlspecialchars(substr($task->getDescription(), 0, 150))); ?>
+                                <?php if (strlen($task->getDescription()) > 150): ?>...<?php endif; ?>
                             </div>
                         <?php endif; ?>
                         
@@ -368,19 +431,32 @@ try {
                         </div>
                         
                         <div class="task-actions">
-                            <a href="edit.php?id=<?php echo $task->getId(); ?>&sprint_id=<?php echo $sprint_id; ?>" class="btn btn-edit">
+                            <a href="comments.php?task_id=<?php echo $task->getId(); ?>&sprint_id=<?php echo $sprint_id; ?>" 
+                               class="btn btn-comment">
+                                <i class="fas fa-comments"></i>
+                                Commentaires
+                                <?php if ($comment_count > 0): ?>
+                                    <span class="comment-count"><?php echo $comment_count; ?></span>
+                                <?php endif; ?>
+                            </a>
+                            
+                            <a href="edit.php?id=<?php echo $task->getId(); ?>&sprint_id=<?php echo $sprint_id; ?>" 
+                               class="btn btn-edit">
                                 <i class="fas fa-edit"></i>
                                 Modifier
                             </a>
-                            <a href="delete.php?id=<?php echo $task->getId(); ?>&sprint_id=<?php echo $sprint_id; ?>" 
-                               class="btn btn-delete"
-                               onclick="return confirm('Supprimer cette tâche?')">
-                                <i class="fas fa-trash"></i>
-                                Supprimer
-                            </a>
-                            <a href="assign.php?task_id=<?php echo $task->getId(); ?>&sprint_id=<?php echo $sprint_id; ?>" class="btn btn-assign">
+                            
+                            <a href="assign.php?task_id=<?php echo $task->getId(); ?>&sprint_id=<?php echo $sprint_id; ?>" 
+                               class="btn btn-assign">
                                 <i class="fas fa-user-plus"></i>
                                 Assigner
+                            </a>
+                            
+                            <a href="delete.php?id=<?php echo $task->getId(); ?>&sprint_id=<?php echo $sprint_id; ?>" 
+                               class="btn btn-delete"
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche?')">
+                                <i class="fas fa-trash-alt"></i>
+                                Supprimer
                             </a>
                         </div>
                     </div>
@@ -388,8 +464,8 @@ try {
             </div>
             
             <div style="text-align: center;">
-                <a href="create.php?sprint_id=<?php echo $sprint_id; ?>" class="btn btn-create">
-                    <i class="fas fa-plus"></i>
+                <a href="create.php?sprint_id=<?php echo $sprint_id; ?>" class="btn-create">
+                    <i class="fas fa-plus-circle"></i>
                     Créer une nouvelle tâche
                 </a>
             </div>

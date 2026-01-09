@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../repositories/NotificationRepository.php';
+require_once __DIR__ . '/../repositories/UserRepository.php';
 
 class NotificationService {
     private $notificationRepository;
@@ -19,22 +20,6 @@ class NotificationService {
         $notification = new Notification(
             $user_id,
             'task_assigned',
-            $message,
-            $task_id
-        );
-        
-        return $this->notificationRepository->create($notification);
-    }
-    
-    public function notifyTaskUpdated($task_id, $user_id, $task_title, $updated_by) {
-        $user = $this->userRepository->findById($updated_by);
-        $updater = $user ? $user->getNom() : 'Un utilisateur';
-        
-        $message = "$updater a modifié la tâche : $task_title";
-        
-        $notification = new Notification(
-            $user_id,
-            'task_updated',
             $message,
             $task_id
         );
@@ -72,14 +57,6 @@ class NotificationService {
     
     public function markAllAsRead($user_id) {
         return $this->notificationRepository->markAllAsRead($user_id);
-    }
-    
-    public function deleteNotification($notification_id) {
-        return $this->notificationRepository->delete($notification_id);
-    }
-    
-    public function cleanupOldNotifications($days = 30) {
-        return $this->notificationRepository->deleteOld($days);
     }
 }
 ?>
